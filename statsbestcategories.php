@@ -92,11 +92,26 @@ class statsbestcategories extends ModuleGrid
         $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => _PS_VERSION_];
     }
 
+    /**
+     * Install the module and register the stats dashboard hook.
+     *
+     * @return bool True on successful installation, false otherwise
+     */
     public function install()
     {
         return parent::install() && $this->registerHook('displayAdminStatsModules');
     }
 
+    /**
+     * Render the best-categories grid on the admin statistics dashboard.
+     *
+     * Supports a checkbox filter to show only leaf categories (those with no children).
+     * When an export request is detected, outputs a CSV file instead of HTML.
+     *
+     * @param array $params Hook parameters passed by PrestaShop (unused)
+     *
+     * @return string HTML output for the statistics widget
+     */
     public function hookDisplayAdminStatsModules($params)
     {
         $onlyChildren = (int) Tools::getValue('onlyChildren');
@@ -150,6 +165,17 @@ class statsbestcategories extends ModuleGrid
         return $this->html;
     }
 
+    /**
+     * Build and execute the category ranking query, populating $this->_values and $this->_totalCount.
+     *
+     * Joins order lines, product-category mappings, and page-view counters.
+     * Applies multi-shop context restrictions and an optional leaf-category filter.
+     * Formats currency values using the store's default locale after fetching rows.
+     *
+     * @return void
+     *
+     * @complexity O(p * c) where p = number of products and c = number of categories in scope
+     */
     public function getData()
     {
         $currency = new Currency((int) Configuration::get('PS_CURRENCY_DEFAULT'));
