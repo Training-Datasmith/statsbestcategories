@@ -30,16 +30,26 @@ EXPECTED_FILES=(
   "$REPO_ROOT/tests/UpgradeModule201Test.php"
 )
 
-sorted_actual=()
+sorted_expected=()
 while IFS= read -r f; do
-  sorted_actual+=("$f")
+  sorted_expected+=("$f")
 done < <(printf '%s\n' "${EXPECTED_FILES[@]}" | sort)
-sorted_expected=("${sorted_actual[@]}")
 
-if [ "${#sorted_actual[@]}" -ne 3 ]; then
-  echo "Test file list drift" >&2
+sorted_on_disk=()
+while IFS= read -r f; do
+  sorted_on_disk+=("$f")
+done < <(find "$REPO_ROOT/tests" -maxdepth 1 -type f -name '*Test.php' | sort)
+
+if [ "${#sorted_on_disk[@]}" -ne "${#sorted_expected[@]}" ]; then
+  echo "Test file count drift (disk=${#sorted_on_disk[@]} expected=${#sorted_expected[@]})" >&2
   exit 1
 fi
+for i in "${!sorted_expected[@]}"; do
+  if [ "${sorted_on_disk[$i]}" != "${sorted_expected[$i]}" ]; then
+    echo "Test file list drift at index $i: ${sorted_on_disk[$i]} != ${sorted_expected[$i]}" >&2
+    exit 1
+  fi
+done
 
 RUNTIME_DIR="$(mktemp -d)"
 chmod 0700 "$RUNTIME_DIR"
@@ -135,7 +145,7 @@ run_phpunit_once() {
     -w /work \
     "$PHP_IMAGE_TAG" \
     php -d error_reporting=-1 -d display_errors=1 -d html_errors=0 \
-    /runtime/phpunit-4.8.36.phar --configuration "/runtime/${xml_basename}" | tee "$log_path"
+    /runtime/phpunit-4.8.36.phar --configuration "/runtime/${xml_basename}" >"$log_path" 2>&1
 
   if grep -E '(FAILURES!|Skipped:|Incomplete:|Risky)' "$log_path" >/dev/null; then
     echo "PHPUnit reported failures/skips/risky" >&2

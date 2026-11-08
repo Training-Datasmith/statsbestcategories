@@ -415,6 +415,8 @@ class StatsBestCategoriesTest extends PHPUnit_Framework_TestCase
         $ids = $this->categoryIds($module->valuesForTest());
         $this->assertSame(array(3, 4, 5, 7, 8, 9), $ids);
         $this->assertNotContains(6, $ids);
+        $row = $this->rowByCategoryId($module->valuesForTest(), 4);
+        $this->assertSame(2, (int) $row['totalQuantitySold']);
     }
 
     public function testShopContextLeafFilterKeepsOnlyLeavesInThatTree()

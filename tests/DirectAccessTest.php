@@ -66,41 +66,41 @@ class DirectAccessTest extends PHPUnit_Framework_TestCase
     {
         list($code, $stdout) = $this->runIncludedFile(dirname(__DIR__) . '/statsbestcategories.php', false);
         $this->assertSame(0, $code);
-        $this->assertNotContains('SENTINEL_INCLUDED', $stdout);
+        $this->assertNotContains('STATSBC_INVOKE_SENTINEL', $stdout);
     }
 
     public function testRootIndexExitsCleanly()
     {
         list($code, $stdout) = $this->runIncludedFile(dirname(__DIR__) . '/index.php', true);
         $this->assertSame(0, $code);
-        $this->assertNotContains('SENTINEL_INCLUDED', $stdout);
+        $this->assertNotContains('STATSBC_INVOKE_SENTINEL', $stdout);
     }
 
     public function testTestsIndexExitsCleanly()
     {
         list($code, $stdout) = $this->runIncludedFile(dirname(__DIR__) . '/tests/index.php', true);
         $this->assertSame(0, $code);
-        $this->assertNotContains('SENTINEL_INCLUDED', $stdout);
+        $this->assertNotContains('STATSBC_INVOKE_SENTINEL', $stdout);
     }
 
     public function testPhpstanIndexExitsCleanly()
     {
         list($code, $stdout) = $this->runIncludedFile(dirname(__DIR__) . '/tests/phpstan/index.php', true);
         $this->assertSame(0, $code);
-        $this->assertNotContains('SENTINEL_INCLUDED', $stdout);
+        $this->assertNotContains('STATSBC_INVOKE_SENTINEL', $stdout);
     }
 
     public function testTranslationsIndexExitsCleanly()
     {
         list($code, $stdout) = $this->runIncludedFile(dirname(__DIR__) . '/translations/index.php', true);
         $this->assertSame(0, $code);
-        $this->assertNotContains('SENTINEL_INCLUDED', $stdout);
+        $this->assertNotContains('STATSBC_INVOKE_SENTINEL', $stdout);
     }
 
     public function testUpgradeIndexExitsCleanly()
     {
         list($code, $stdout) = $this->runIncludedFile(dirname(__DIR__) . '/upgrade/index.php', true);
         $this->assertSame(0, $code);
-        $this->assertNotContains('SENTINEL_INCLUDED', $stdout);
+        $this->assertNotContains('STATSBC_INVOKE_SENTINEL', $stdout);
     }
 }

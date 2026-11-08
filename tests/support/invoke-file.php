@@ -42,10 +42,9 @@ if ($defineVersion) {
     define('_PS_VERSION_', '9.9.9.9');
 }
 
-define('SENTINEL_INCLUDED', true);
-
 ob_start();
 include $target;
 $output = ob_get_clean();
 
 echo $output;
+echo "STATSBC_INVOKE_SENTINEL\n";
