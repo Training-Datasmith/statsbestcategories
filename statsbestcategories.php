@@ -155,9 +155,10 @@ class statsbestcategories extends ModuleGrid
         $id_lang = $this->getLang();
 
         //If column 'order_detail.original_wholesale_price' does not exist, create it
-        Db::getInstance((bool) _PS_USE_SQL_SLAVE_)->query('SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'order_detail` LIKE "original_wholesale_price"');
-        if (Db::getInstance()->NumRows() == 0) {
-            Db::getInstance()->execute('ALTER TABLE `' . _DB_PREFIX_ . 'order_detail` ADD `original_wholesale_price` DECIMAL( 20, 6 ) NOT NULL DEFAULT  "0.000000"');
+        $database = Db::getInstance();
+        $database->query('SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'order_detail` LIKE "original_wholesale_price"');
+        if ($database->NumRows() == 0) {
+            $database->execute('ALTER TABLE `' . _DB_PREFIX_ . 'order_detail` ADD `original_wholesale_price` DECIMAL( 20, 6 ) NOT NULL DEFAULT  "0.000000"');
         }
 
         // If a shop is selected, get all children categories for the shop
@@ -189,10 +190,14 @@ class statsbestcategories extends ModuleGrid
             }
         }
 
-        $onlyChildren = '';
-        if ((int) Tools::getValue('onlyChildren') == 1) {
-            $onlyChildren = 'AND NOT EXISTS (SELECT NULL FROM ' . _DB_PREFIX_ . 'category WHERE id_parent = ca.id_category)';
+        $where = array();
+        if ($categories) {
+            $where[] = 'ca.id_category IN (' . implode(', ', $categories) . ')';
         }
+        if ((int) Tools::getValue('onlyChildren') == 1) {
+            $where[] = 'NOT EXISTS (SELECT NULL FROM ' . _DB_PREFIX_ . 'category WHERE id_parent = ca.id_category)';
+        }
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
         // Get best categories
 
@@ -247,12 +252,11 @@ class statsbestcategories extends ModuleGrid
                 GROUP BY pr.`id_product`
             ) t ON t.`id_product` = pr.`id_product`
         ) t    ON t.`id_product` = capr.`id_product`
-        ' . (($categories) ? 'WHERE ca.id_category IN (' . implode(', ', $categories) . ')' : '') . '
-        ' . $onlyChildren . '
+        ' . $whereSql . '
         GROUP BY ca.`id_category`
         HAVING ca.`id_category` != 1';
 
-        if (Validate::IsName($this->_sort)) {
+        if (!empty($this->_sort) && Validate::IsName($this->_sort)) {
             $this->query .= ' ORDER BY `' . bqSQL($this->_sort) . '`';
             if (isset($this->_direction) && Validate::isSortDirection($this->_direction)) {
                 $this->query .= ' ' . $this->_direction;
